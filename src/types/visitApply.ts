@@ -53,6 +53,11 @@ export interface VisitApplyDetail extends VisitApplyForm {
   approvalComment?: string
 }
 
+export interface ApprovalParams {
+  approved: boolean
+  remark?: string
+}
+
 export type VisitStatus = 'pending' | 'approved' | 'rejected' | 'visited' | 'completed'
 
 export const statusMap: Record<VisitStatus, { label: string; type: 'success' | 'warning' | 'danger' | 'info' }> = {

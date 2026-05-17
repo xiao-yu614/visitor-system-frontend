@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, reactive } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { Refresh } from '@element-plus/icons-vue'
-import { getApplyList } from '@/api/approval'
+import { getApplyList, approveApply } from '@/api/approval'
 import { statusMap } from '@/types/visitApply'
 import type { VisitApplyItem, VisitApplyListParams, VisitStatus } from '@/types/visitApply'
 
@@ -17,6 +17,12 @@ const searchParams = reactive<VisitApplyListParams>({
   page: 1,
   size: 10
 })
+
+const approvalDialogVisible = ref(false)
+const approvalLoading = ref(false)
+const currentApprovalId = ref('')
+const currentApprovalType = ref<'approve' | 'reject'>('approve')
+const approvalRemark = ref('')
 
 const fetchData = async () => {
   loading.value = true
@@ -59,6 +65,56 @@ const handleSizeChange = (size: number) => {
   searchParams.size = size
   searchParams.page = 1
   fetchData()
+}
+
+const handleApprove = (row: VisitApplyItem) => {
+  currentApprovalId.value = row.id
+  currentApprovalType.value = 'approve'
+  approvalRemark.value = ''
+  approvalDialogVisible.value = true
+}
+
+const handleReject = (row: VisitApplyItem) => {
+  currentApprovalId.value = row.id
+  currentApprovalType.value = 'reject'
+  approvalRemark.value = ''
+  approvalDialogVisible.value = true
+}
+
+const confirmApproval = async () => {
+  if (currentApprovalType.value === 'reject' && !approvalRemark.value.trim()) {
+    ElMessage.warning('请输入拒绝原因')
+    return
+  }
+
+  try {
+    await ElMessageBox.confirm(
+      currentApprovalType.value === 'approve' ? '确定通过该申请吗？' : '确定拒绝该申请吗？',
+      '确认审批',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: currentApprovalType.value === 'approve' ? 'success' : 'warning'
+      }
+    )
+
+    approvalLoading.value = true
+    await approveApply(currentApprovalId.value, {
+      approved: currentApprovalType.value === 'approve',
+      remark: approvalRemark.value || undefined
+    })
+
+    ElMessage.success(currentApprovalType.value === 'approve' ? '已通过申请' : '已拒绝申请')
+    approvalDialogVisible.value = false
+    fetchData()
+  } catch (error: any) {
+    if (error !== 'cancel') {
+      ElMessage.error('审批操作失败')
+      console.error('Approval failed:', error)
+    }
+  } finally {
+    approvalLoading.value = false
+  }
 }
 
 onMounted(() => {
@@ -150,6 +206,35 @@ onMounted(() => {
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" width="180" />
+        <el-table-column label="操作" width="180" fixed="right">
+          <template #default="scope">
+            <template v-if="scope.row.status === 'pending'">
+              <el-button
+                type="success"
+                size="small"
+                @click="handleApprove(scope.row)"
+              >
+                通过
+              </el-button>
+              <el-button
+                type="danger"
+                size="small"
+                @click="handleReject(scope.row)"
+              >
+                拒绝
+              </el-button>
+            </template>
+            <template v-else>
+              <el-button
+                type="info"
+                size="small"
+                disabled
+              >
+                已处理
+              </el-button>
+            </template>
+          </template>
+        </el-table-column>
       </el-table>
 
       <el-pagination
@@ -163,6 +248,34 @@ onMounted(() => {
         style="margin-top: 20px; text-align: right"
       />
     </el-card>
+
+    <el-dialog
+      v-model="approvalDialogVisible"
+      :title="currentApprovalType === 'approve' ? '通过申请' : '拒绝申请'"
+      width="500px"
+      :close-on-click-modal="false"
+    >
+      <el-form label-width="100px">
+        <el-form-item label="审批备注">
+          <el-input
+            v-model="approvalRemark"
+            type="textarea"
+            :rows="4"
+            :placeholder="currentApprovalType === 'approve' ? '请输入通过备注（选填）' : '请输入拒绝原因（必填）'"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="approvalDialogVisible = false">取消</el-button>
+        <el-button
+          :type="currentApprovalType === 'approve' ? 'success' : 'danger'"
+          :loading="approvalLoading"
+          @click="confirmApproval"
+        >
+          确认
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
