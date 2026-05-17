@@ -17,10 +17,11 @@ export const useUserStore = defineStore('user', () => {
 
   const login = async (form: LoginForm) => {
     const result = await loginApi(form)
-    if (result.token) {
-      token.value = result.token
-      userInfo.value = result.user
-      setToken(result.token)
+    const data = result.data || result
+    if (data.token) {
+      token.value = data.token
+      userInfo.value = data.user
+      setToken(data.token)
     }
     return result
   }

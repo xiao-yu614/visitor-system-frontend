@@ -28,11 +28,12 @@ const handleLogin = async () => {
   loading.value = true
   try {
     const result = await userStore.login(form.value)
-    if (result.token) {
+    const data = result.data || result
+    if (data.token) {
       ElMessage.success('登录成功')
       await router.push('/admin')
     } else {
-      ElMessage.error('登录失败，请检查用户名或密码')
+      ElMessage.error(result.message || '登录失败，请检查用户名或密码')
     }
   } catch (error) {
     ElMessage.error('登录失败，请检查用户名或密码')

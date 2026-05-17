@@ -1,16 +1,24 @@
 import request from './request'
+import type { StatisticsData } from '@/types/api'
 
-export const getStatistics = (params?: {
-  startTime?: string
-  endTime?: string
-}): Promise<{ data: unknown }> => {
-  return request.get('/statistics', { params })
+const mockGetStatistics = (): Promise<{ data: StatisticsData }> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({
+        code: 200,
+        message: 'success',
+        data: {
+          todayApplyCount: 15,
+          pendingCount: 5,
+          todayCheckInCount: 12,
+          currentInSchoolCount: 8,
+          todayCheckOutCount: 4
+        }
+      })
+    }, 300)
+  })
 }
 
-export const getDailyStatistics = (): Promise<{ data: unknown[] }> => {
-  return request.get('/statistics/daily')
-}
-
-export const getVisitorStatistics = (): Promise<{ data: unknown }> => {
-  return request.get('/statistics/visitor')
+export const getStatistics = (): Promise<{ data: StatisticsData }> => {
+  return mockGetStatistics()
 }
