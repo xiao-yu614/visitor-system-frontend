@@ -1,153 +1,129 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { getVisitRecordList, checkIn, checkOut } from '@/api/visitRecord'
-import { formatDate, formatTime } from '@/utils/format'
+import { ref } from 'vue'
+import { ElMessage } from 'element-plus'
+import { Search } from '@element-plus/icons-vue'
 
-const tableData = ref<unknown[]>([])
-const total = ref(0)
-const page = ref(1)
-const size = ref(10)
+const tableData = ref([
+  { id: 1, name: '张三', idCard: '310***********1234', phone: '138****1234', company: '某某科技有限公司', visitDate: '2026-05-18', checkIn: '09:12', checkOut: '12:30', hostName: '李四', hostDept: '教务处', status: 'completed' },
+  { id: 2, name: '王五', idCard: '310***********5678', phone: '139****5678', company: '某某大学', visitDate: '2026-05-17', checkIn: '10:20', checkOut: '-', hostName: '赵六', hostDept: '科研处', status: 'checkedIn' },
+  { id: 3, name: '钱七', idCard: '310***********9012', phone: '137****9012', company: '某某企业', visitDate: '2026-05-16', checkIn: '14:05', checkOut: '17:20', hostName: '孙八', hostDept: '后勤处', status: 'completed' },
+  { id: 4, name: '周九', idCard: '310***********3456', phone: '136****3456', company: '某某集团', visitDate: '2026-05-15', checkIn: '16:40', checkOut: '18:10', hostName: '吴十', hostDept: '教务处', status: 'completed' }
+])
 
-onMounted(async () => {
-  await loadData()
-})
-
-const loadData = async () => {
-  const result = await getVisitRecordList({ page: page.value, size: size.value })
-  tableData.value = result.data
-  total.value = result.total
+const handleCheckIn = (row: any) => {
+  row.checkIn = '09:15'
+  row.status = 'checkedIn'
+  ElMessage.success('已签到')
 }
 
-const handleCheckIn = async (id: string) => {
-  await checkIn(id)
-  await loadData()
+const handleCheckOut = (row: any) => {
+  row.checkOut = '17:30'
+  row.status = 'completed'
+  ElMessage.success('已签退')
 }
 
-const handleCheckOut = async (id: string) => {
-  await checkOut(id)
-  await loadData()
-}
-
-const handleSizeChange = (val: number) => {
-  size.value = val
-  loadData()
-}
-
-const handleCurrentChange = (val: number) => {
-  page.value = val
-  loadData()
+const getStatusTag = (status: string) => {
+  const map: any = {
+    checkedIn: { type: 'primary', text: '在校' },
+    completed: { type: 'success', text: '已离开' }
+  }
+  return map[status] || { type: 'info', text: '未知' }
 }
 </script>
 
 <template>
-  <div class="visit-record-page">
-    <div class="visit-record-page__header">
-      <h2>来访记录</h2>
+  <div class="visit-record">
+    <div class="page-header">
+      <h2>访问记录管理</h2>
+      <p>查看和管理外来人员的访问记录</p>
     </div>
-    <el-card class="visit-record-page__card">
-      <el-table :data="tableData" border class="record-table">
-        <el-table-column prop="id" label="记录编号" />
-        <el-table-column prop="visitorName" label="访客姓名" />
-        <el-table-column prop="visitorIdCard" label="身份证号" />
-        <el-table-column prop="visitorPhone" label="联系电话" />
-        <el-table-column prop="visitDate" label="来访日期">
-          <template #default="scope">{{ formatDate(scope.row.visitDate) }}</template>
-        </el-table-column>
-        <el-table-column prop="visitTime" label="来访时间">
-          <template #default="scope">{{ formatTime(scope.row.visitTime) }}</template>
-        </el-table-column>
-        <el-table-column prop="visitPlace" label="来访地点" />
-        <el-table-column prop="hostName" label="接待人" />
-        <el-table-column prop="checkInTime" label="签到时间">
-          <template #default="scope">{{ scope.row.checkInTime ? formatTime(scope.row.checkInTime) : '-' }}</template>
-        </el-table-column>
-        <el-table-column prop="checkOutTime" label="签退时间">
-          <template #default="scope">{{ scope.row.checkOutTime ? formatTime(scope.row.checkOutTime) : '-' }}</template>
-        </el-table-column>
-        <el-table-column prop="status" label="状态">
+
+    <el-card class="table-card">
+      <template #header>
+        <div class="card-header">
+          <div class="header-left">
+            <el-input v-model="''" placeholder="搜索访客姓名" prefix-icon="Search" style="width: 200px" clearable />
+            <el-date-picker v-model="''" type="date" placeholder="选择日期" style="width: 180px; margin-left: 12px" />
+            <el-select v-model="''" placeholder="状态" clearable style="width: 120px; margin-left: 12px">
+              <el-option label="全部" value="" />
+              <el-option label="在校" value="checkedIn" />
+              <el-option label="已离开" value="completed" />
+            </el-select>
+          </div>
+        </div>
+      </template>
+
+      <el-table :data="tableData" style="width: 100%" border stripe>
+        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column prop="name" label="访客姓名" width="120" />
+        <el-table-column prop="idCard" label="身份证号" width="180" />
+        <el-table-column prop="phone" label="联系电话" width="140" />
+        <el-table-column prop="company" label="所在单位" show-overflow-tooltip />
+        <el-table-column prop="visitDate" label="访校日期" width="120" />
+        <el-table-column prop="checkIn" label="签到时间" width="120" />
+        <el-table-column prop="checkOut" label="签退时间" width="120" />
+        <el-table-column prop="hostName" label="接待人" width="100" />
+        <el-table-column prop="hostDept" label="接待部门" width="120" />
+        <el-table-column prop="status" label="状态" width="100">
           <template #default="scope">
-            <span :class="['status', `status--${scope.row.status}`]">
-              {{ scope.row.status === 'checked-in' ? '在校' : scope.row.status === 'checked-out' ? '已离开' : '逾期' }}
-            </span>
+            <el-tag :type="getStatusTag(scope.row.status).type">
+              {{ getStatusTag(scope.row.status).text }}
+            </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作">
+        <el-table-column label="操作" width="180">
           <template #default="scope">
-            <el-button
-              v-if="!scope.row.checkInTime"
-              type="primary"
-              size="small"
-              @click="handleCheckIn(scope.row.id)"
-            >
-              签到
-            </el-button>
-            <el-button
-              v-if="scope.row.checkInTime && !scope.row.checkOutTime"
-              type="success"
-              size="small"
-              @click="handleCheckOut(scope.row.id)"
-            >
-              签退
-            </el-button>
-            <span v-else class="no-action">-</span>
+            <template v-if="!scope.row.checkIn">
+              <el-button type="primary" size="small" @click="handleCheckIn(scope.row)">签到</el-button>
+            </template>
+            <template v-else-if="!scope.row.checkOut || scope.row.checkOut === '-'">
+              <el-button type="success" size="small" @click="handleCheckOut(scope.row)">签退</el-button>
+            </template>
+            <template v-else>
+              <el-button type="primary" size="small">查看</el-button>
+            </template>
           </template>
         </el-table-column>
       </el-table>
+
       <el-pagination
-        :current-page="page"
-        :page-size="size"
-        :total="total"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-        class="record-table__pagination"
+        :total="tableData.length"
+        :page-size="10"
+        layout="total, prev, pager, next"
+        style="margin-top: 20px; text-align: right"
       />
     </el-card>
   </div>
 </template>
 
 <style scoped>
-.visit-record-page {
-  padding: 20px;
+.visit-record {
+  padding: 10px;
 }
 
-.visit-record-page__header {
-  margin-bottom: 20px;
+.page-header {
+  margin-bottom: 24px;
 }
 
-.visit-record-page__header h2 {
+.page-header h2 {
   font-size: 24px;
+  color: #303133;
+  margin: 0 0 8px 0;
 }
 
-.record-table {
-  margin-bottom: 20px;
+.page-header p {
+  font-size: 14px;
+  color: #909399;
+  margin: 0;
 }
 
-.status {
-  padding: 4px 12px;
-  border-radius: 4px;
-  font-size: 12px;
+.table-card {
+  border-radius: 8px;
 }
 
-.status--checked-in {
-  background-color: #E8F4FD;
-  color: #409EFF;
-}
-
-.status--checked-out {
-  background-color: #E8F8E8;
-  color: #67C23A;
-}
-
-.status--overdue {
-  background-color: #FEE8E8;
-  color: #F56C6C;
-}
-
-.no-action {
-  color: #C0C4CC;
-}
-
-.record-table__pagination {
-  text-align: right;
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 </style>

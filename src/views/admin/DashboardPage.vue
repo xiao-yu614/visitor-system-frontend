@@ -1,66 +1,55 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { getStatistics, getDailyStatistics } from '@/api/statistics'
-import { User, CheckCircle, Clock, AlertCircle } from '@element-plus/icons-vue'
+import { User, Check, Warning, Clock } from '@element-plus/icons-vue'
 
-const statistics = ref<unknown>(null)
-const dailyData = ref<unknown[]>([])
-
-onMounted(async () => {
-  statistics.value = await getStatistics()
-  dailyData.value = (await getDailyStatistics()).data
-})
+const stats = ref([
+  { label: '今日访客', value: 32, icon: User, color: '#409eff' },
+  { label: '已通过申请', value: 128, icon: Check, color: '#67c23a' },
+  { label: '待审核', value: 15, icon: Warning, color: '#e6a23c' },
+  { label: '今日签到', value: 25, icon: Clock, color: '#f56c6c' }
+])
 </script>
 
 <template>
-  <div class="dashboard-page">
-    <div class="dashboard-page__header">
-      <h2>仪表盘</h2>
-      <p>欢迎回来，管理员</p>
+  <div class="dashboard">
+    <div class="page-header">
+      <h2>首页统计</h2>
+      <p>欢迎使用外来人员访校管理系统</p>
     </div>
-    <div class="dashboard-page__stats">
-      <el-card class="stat-card">
-        <div class="stat-card__icon stat-card__icon--primary">
-          <el-icon :size="32"><User /></el-icon>
+
+    <div class="stats-container">
+      <div v-for="(stat, index) in stats" :key="index" class="stat-card">
+        <div class="stat-icon" :style="{ backgroundColor: stat.color + '20' }">
+          <el-icon :size="40" :color="stat.color">
+            <component :is="stat.icon" />
+          </el-icon>
         </div>
-        <div class="stat-card__content">
-          <div class="stat-card__value">128</div>
-          <div class="stat-card__label">今日访客</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stat.value }}</div>
+          <div class="stat-label">{{ stat.label }}</div>
         </div>
-      </el-card>
-      <el-card class="stat-card">
-        <div class="stat-card__icon stat-card__icon--success">
-          <el-icon :size="32"><CheckCircle /></el-icon>
-        </div>
-        <div class="stat-card__content">
-          <div class="stat-card__value">89</div>
-          <div class="stat-card__label">已通过申请</div>
-        </div>
-      </el-card>
-      <el-card class="stat-card">
-        <div class="stat-card__icon stat-card__icon--warning">
-          <el-icon :size="32"><Clock /></el-icon>
-        </div>
-        <div class="stat-card__content">
-          <div class="stat-card__value">23</div>
-          <div class="stat-card__label">待审核</div>
-        </div>
-      </el-card>
-      <el-card class="stat-card">
-        <div class="stat-card__icon stat-card__icon--danger">
-          <el-icon :size="32"><AlertCircle /></el-icon>
-        </div>
-        <div class="stat-card__content">
-          <div class="stat-card__value">5</div>
-          <div class="stat-card__label">逾期未离开</div>
-        </div>
-      </el-card>
+      </div>
     </div>
-    <div class="dashboard-page__charts">
+
+    <div class="charts-container">
       <el-card class="chart-card">
-        <h3>每日来访统计</h3>
+        <template #header>
+          <div class="card-header">
+            <span>今日访客趋势</span>
+          </div>
+        </template>
         <div class="chart-placeholder">
-          <p>图表占位符</p>
+          <el-empty description="图表区域占位" />
+        </div>
+      </el-card>
+      <el-card class="chart-card">
+        <template #header>
+          <div class="card-header">
+            <span>申请类型统计</span>
+          </div>
+        </template>
+        <div class="chart-placeholder">
+          <el-empty description="图表区域占位" />
         </div>
       </el-card>
     </div>
@@ -68,99 +57,88 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.dashboard-page {
-  padding: 20px;
+.dashboard {
+  padding: 10px;
 }
 
-.dashboard-page__header {
-  margin-bottom: 20px;
+.page-header {
+  margin-bottom: 24px;
 }
 
-.dashboard-page__header h2 {
+.page-header h2 {
   font-size: 24px;
-  margin-bottom: 4px;
+  color: #303133;
+  margin: 0 0 8px 0;
 }
 
-.dashboard-page__stats {
+.page-header p {
+  font-size: 14px;
+  color: #909399;
+  margin: 0;
+}
+
+.stats-container {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .stat-card {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 20px;
+  gap: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
 }
 
-.stat-card__icon {
-  width: 64px;
-  height: 64px;
-  border-radius: 12px;
+.stat-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.stat-card__icon--primary {
-  background-color: #E8F4FD;
-  color: #409EFF;
+.stat-content {
+  flex: 1;
 }
 
-.stat-card__icon--success {
-  background-color: #E8F8E8;
-  color: #67C23A;
-}
-
-.stat-card__icon--warning {
-  background-color: #FFF8E8;
-  color: #E6A23C;
-}
-
-.stat-card__icon--danger {
-  background-color: #FEE8E8;
-  color: #F56C6C;
-}
-
-.stat-card__value {
-  font-size: 28px;
+.stat-value {
+  font-size: 36px;
   font-weight: bold;
   color: #303133;
+  line-height: 1;
+  margin-bottom: 8px;
 }
 
-.stat-card__label {
+.stat-label {
   font-size: 14px;
   color: #909399;
-  margin-top: 4px;
 }
 
-.dashboard-page__charts {
+.charts-container {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
 }
 
 .chart-card {
-  padding: 20px;
+  height: 350px;
 }
 
-.chart-card h3 {
-  font-size: 16px;
-  margin-bottom: 16px;
+.card-header {
+  font-weight: 600;
+  color: #303133;
 }
 
 .chart-placeholder {
-  height: 200px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #F5F7FA;
-  border-radius: 8px;
-}
-
-.chart-placeholder p {
-  color: #909399;
+  height: 260px;
 }
 </style>

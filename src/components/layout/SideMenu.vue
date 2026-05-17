@@ -1,19 +1,18 @@
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router'
-import { LayoutDashboard, FileText, ClipboardList } from '@element-plus/icons-vue'
+import { computed } from 'vue'
+import { Home, Document, Clock, ChatDotSquare } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const route = useRoute()
 
 const menuItems = [
-  { path: '/admin', label: '仪表盘', icon: LayoutDashboard },
-  { path: '/admin/apply-list', label: '申请列表', icon: FileText },
-  { path: '/admin/visit-record', label: '来访记录', icon: ClipboardList }
+  { path: '/admin', name: '首页统计', icon: Home },
+  { path: '/admin/apply-list', name: '访校申请管理', icon: Document },
+  { path: '/admin/visit-record', name: '访问记录管理', icon: Clock }
 ]
 
-const isActive = (path: string) => {
-  return route.path === path
-}
+const activePath = computed(() => route.path)
 
 const handleNav = (path: string) => {
   router.push(path)
@@ -21,29 +20,42 @@ const handleNav = (path: string) => {
 </script>
 
 <template>
-  <div class="side-menu">
-    <el-menu mode="vertical" :default-active="route.path" class="side-menu__menu">
+  <el-aside width="220px" class="side-menu">
+    <el-menu
+      :default-active="activePath"
+      class="side-menu-nav"
+      background-color="#001529"
+      text-color="rgba(255, 255, 255, 0.7)"
+      active-text-color="#409eff"
+    >
       <el-menu-item
         v-for="item in menuItems"
         :key="item.path"
         :index="item.path"
-        :class="{ 'is-active': isActive(item.path) }"
         @click="handleNav(item.path)"
       >
-        <el-icon :size="20"><component :is="item.icon" /></el-icon>
-        <span>{{ item.label }}</span>
+        <el-icon class="menu-icon">
+          <component :is="item.icon" />
+        </el-icon>
+        <span>{{ item.name }}</span>
       </el-menu-item>
     </el-menu>
-  </div>
+  </el-aside>
 </template>
 
 <style scoped>
 .side-menu {
+  background-color: #001529;
   height: 100%;
-  padding-top: 20px;
+  overflow-y: auto;
 }
 
-.side-menu__menu {
+.side-menu-nav {
   border-right: none;
+}
+
+.menu-icon {
+  margin-right: 10px;
+  font-size: 18px;
 }
 </style>
