@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { ref, onMounted, reactive } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { Refresh } from '@element-plus/icons-vue'
-import { getVisitRecordList } from '@/api/visitRecord'
+import { getVisitRecordList, checkIn, checkOut } from '@/api/visitRecord'
 import { recordStatusMap } from '@/types/visitRecord'
 import type { VisitRecord, VisitRecordListParams, VisitRecordStatus } from '@/types/visitRecord'
 
 const loading = ref(false)
 const tableData = ref<VisitRecord[]>([])
 const total = ref(0)
+const actionLoading = ref(false)
+const currentActionId = ref('')
+const currentActionType = ref<'checkIn' | 'checkOut'>('checkIn')
 
 const searchParams = reactive<VisitRecordListParams>({
   visitorName: '',
@@ -63,6 +66,55 @@ const handleSizeChange = (size: number) => {
   searchParams.size = size
   searchParams.page = 1
   fetchData()
+}
+
+const handleCheckIn = (row: VisitRecord) => {
+  currentActionId.value = row.id
+  currentActionType.value = 'checkIn'
+  confirmAction()
+}
+
+const handleCheckOut = (row: VisitRecord) => {
+  currentActionId.value = row.id
+  currentActionType.value = 'checkOut'
+  confirmAction()
+}
+
+const confirmAction = async () => {
+  const actionText = currentActionType.value === 'checkIn' ? '入校登记' : '离校登记'
+  const confirmText = currentActionType.value === 'checkIn' ? '确定要为该访客办理入校登记吗？' : '确定要为该访客办理离校登记吗？'
+
+  try {
+    await ElMessageBox.confirm(
+      confirmText,
+      `${actionText}确认`,
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: currentActionType.value === 'checkIn' ? 'info' : 'warning'
+      }
+    )
+
+    actionLoading.value = true
+
+    if (currentActionType.value === 'checkIn') {
+      await checkIn(currentActionId.value)
+      ElMessage.success('入校登记成功')
+    } else {
+      await checkOut(currentActionId.value)
+      ElMessage.success('离校登记成功')
+    }
+
+    fetchData()
+  } catch (error: any) {
+    if (error !== 'cancel') {
+      const errorMessage = error?.response?.data?.message || error?.message || '操作失败'
+      ElMessage.error(errorMessage)
+      console.error('Action failed:', error)
+    }
+  } finally {
+    actionLoading.value = false
+  }
 }
 
 onMounted(() => {
@@ -185,20 +237,28 @@ onMounted(() => {
         </el-table-column>
         <el-table-column label="操作" width="180" fixed="right">
           <template #default="scope">
-            <template v-if="scope.row.status === 'checked-in'">
-              <el-button type="success" size="small">
-                离校
+            <template v-if="scope.row.status === 'WAITING_CHECK_IN'">
+              <el-button
+                type="primary"
+                size="small"
+                :loading="actionLoading && currentActionId === scope.row.id"
+                @click="handleCheckIn(scope.row)"
+              >
+                入校登记
               </el-button>
             </template>
-            <template v-else-if="scope.row.status === 'completed' || scope.row.status === 'checked-out'">
-              <el-button type="info" size="small" disabled>
-                已结束
+            <template v-else-if="scope.row.status === 'CHECKED_IN'">
+              <el-button
+                type="success"
+                size="small"
+                :loading="actionLoading && currentActionId === scope.row.id"
+                @click="handleCheckOut(scope.row)"
+              >
+                离校登记
               </el-button>
             </template>
             <template v-else>
-              <el-button type="primary" size="small">
-                入校
-              </el-button>
+              <span style="color: #909399; font-size: 13px;">-</span>
             </template>
           </template>
         </el-table-column>

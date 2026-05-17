@@ -10,9 +10,9 @@ export const getVisitRecordById = (id: string): Promise<VisitRecordListResponse>
 }
 
 export const checkIn = (id: string): Promise<void> => {
-  return request.post(`/visit-record/${id}/check-in`)
+  return request.put(`/visit-record/${id}/check-in`)
 }
 
 export const checkOut = (id: string): Promise<void> => {
-  return request.post(`/visit-record/${id}/check-out`)
+  return request.put(`/visit-record/${id}/check-out`)
 }
