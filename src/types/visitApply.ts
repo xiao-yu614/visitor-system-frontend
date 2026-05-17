@@ -1,20 +1,22 @@
 export interface VisitApplyForm {
   visitorName: string
-  visitorIdCard: string
-  visitorPhone: string
-  visitorCompany?: string
-  visitDate: string
-  visitTime: string
-  leaveTime: string
-  visitReason: string
-  visitPlace: string
-  hostName: string
-  hostPhone: string
-  hostDepartment: string
+  phone: string
+  idCard: string
+  company?: string
+  visitPerson: string
+  reason: string
+  startTime: string
+  endTime: string
+}
+
+export interface VisitApplyResponse {
+  applyId: string
+  message?: string
 }
 
 export interface VisitApplyDetail extends VisitApplyForm {
   id: string
+  applyId: string
   status: VisitStatus
   createTime: string
   updateTime?: string

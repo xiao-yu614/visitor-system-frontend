@@ -12,6 +12,12 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'home',
+    redirect: '/apply',
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/apply',
+    name: 'apply',
     component: () => import('@/views/visitor/ApplyPage.vue'),
     meta: { requiresAuth: false }
   },
