@@ -1,16 +1,11 @@
 import request from './request'
+import type { VisitRecordListParams, VisitRecordListResponse } from '@/types/visitRecord'
 
-export const getVisitRecordList = (params?: {
-  page?: number
-  size?: number
-  visitorName?: string
-  startTime?: string
-  endTime?: string
-}): Promise<{ data: unknown[]; total: number }> => {
-  return request.get('/visit-record/list', { params })
+export const getVisitRecordList = (params?: VisitRecordListParams): Promise<VisitRecordListResponse> => {
+  return request.get('/admin/visit-record/list', { params })
 }
 
-export const getVisitRecordById = (id: string): Promise<{ data: unknown }> => {
+export const getVisitRecordById = (id: string): Promise<VisitRecordListResponse> => {
   return request.get(`/visit-record/${id}`)
 }
 
