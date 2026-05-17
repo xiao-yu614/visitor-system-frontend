@@ -1,12 +1,19 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { login as loginApi, logout as logoutApi } from '@/api/auth'
-import { setToken, removeToken } from '@/utils/token'
-import type { LoginForm } from '@/types/auth'
+import { setToken, removeToken, getToken } from '@/utils/token'
+import type { LoginForm, UserInfo } from '@/types/auth'
 
 export const useUserStore = defineStore('user', () => {
-  const userInfo = ref<unknown>(null)
+  const userInfo = ref<UserInfo | null>(null)
   const token = ref<string | null>(null)
+
+  const initUser = () => {
+    const savedToken = getToken()
+    if (savedToken) {
+      token.value = savedToken
+    }
+  }
 
   const login = async (form: LoginForm) => {
     const result = await loginApi(form)
@@ -19,13 +26,17 @@ export const useUserStore = defineStore('user', () => {
   }
 
   const logout = async () => {
-    await logoutApi()
+    try {
+      await logoutApi()
+    } catch {
+      console.log('Logout API failed, but continuing with local logout')
+    }
     userInfo.value = null
     token.value = null
     removeToken()
   }
 
-  const setUserInfo = (info: unknown) => {
+  const setUserInfo = (info: UserInfo) => {
     userInfo.value = info
   }
 
@@ -34,6 +45,7 @@ export const useUserStore = defineStore('user', () => {
     token,
     login,
     logout,
-    setUserInfo
+    setUserInfo,
+    initUser
   }
 })
