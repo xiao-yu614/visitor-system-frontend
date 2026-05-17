@@ -1,6 +1,6 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from 'axios'
 import { ElMessage } from 'element-plus'
-import { getToken } from '@/utils/token'
+import { getToken, removeToken } from '@/utils/token'
 import router from '@/router'
 
 const request: AxiosInstance = axios.create({
@@ -27,7 +27,7 @@ request.interceptors.request.use(
 request.interceptors.response.use(
   (response: AxiosResponse) => {
     const res = response.data
-    if (res.code && res.code !== 200) {
+    if (res.code !== undefined && res.code !== 200 && res.code !== 0) {
       ElMessage.error(res.message || '请求失败')
       return Promise.reject(new Error(res.message || '请求失败'))
     }
@@ -39,7 +39,7 @@ request.interceptors.response.use(
       switch (status) {
         case 401:
           ElMessage.error('登录已过期，请重新登录')
-          localStorage.removeItem('visitor_system_token')
+          removeToken()
           router.push('/login')
           break
         case 403:
