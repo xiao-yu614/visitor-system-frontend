@@ -64,7 +64,12 @@ const handleSubmit = async () => {
     if (valid) {
       loading.value = true
       try {
-        const result = await createVisitApply(form)
+        const submitData = {
+          ...form,
+          startTime: formatDateTime(form.startTime),
+          endTime: formatDateTime(form.endTime)
+        }
+        const result = await createVisitApply(submitData)
         applyId.value = result.applyId
         showSuccessDialog.value = true
       } catch (error) {
@@ -75,6 +80,18 @@ const handleSubmit = async () => {
       }
     }
   })
+}
+
+const formatDateTime = (dateTime: string): string => {
+  if (!dateTime) return ''
+  const date = new Date(dateTime)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  const seconds = String(date.getSeconds()).padStart(2, '0')
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
 
 const resetForm = () => {

@@ -1,4 +1,3 @@
-import request from './request'
 import type { VisitApplyForm, VisitApplyResponse } from '@/types/visitApply'
 
 const mockCreateVisitApply = (data: VisitApplyForm): Promise<VisitApplyResponse> => {
@@ -6,11 +5,8 @@ const mockCreateVisitApply = (data: VisitApplyForm): Promise<VisitApplyResponse>
     setTimeout(() => {
       const applyId = 'AP' + Date.now().toString().slice(-8)
       resolve({
-        code: 200,
-        message: '申请提交成功',
-        data: {
-          applyId
-        }
+        applyId,
+        message: '申请提交成功'
       })
     }, 500)
   })
