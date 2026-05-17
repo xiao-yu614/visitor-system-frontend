@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router'
 import { computed } from 'vue'
-import { Home, Document, Clock, ChatDotSquare } from '@element-plus/icons-vue'
+import { HomeFilled, Document, Clock } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const route = useRoute()
 
 const menuItems = [
-  { path: '/admin', name: '首页统计', icon: Home },
-  { path: '/admin/apply-list', name: '访校申请管理', icon: Document },
+  { path: '/admin', name: '首页统计', icon: HomeFilled },
+  { path: '/admin/apply-list', name: '访校申请管理', icon: File },
   { path: '/admin/visit-record', name: '访问记录管理', icon: Clock }
 ]
 
