@@ -1,13 +1,38 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { User, Check, Warning, Clock } from '@element-plus/icons-vue'
+import { getStatistics } from '@/api/statistics'
 
 const stats = ref([
-  { label: '今日访客', value: 32, icon: User, color: '#409eff' },
-  { label: '已通过申请', value: 128, icon: Check, color: '#67c23a' },
-  { label: '待审核', value: 15, icon: Warning, color: '#e6a23c' },
-  { label: '今日签到', value: 25, icon: Clock, color: '#f56c6c' }
+  { label: '今日访客', value: 0, icon: User, color: '#409eff' },
+  { label: '已通过申请', value: 0, icon: Check, color: '#67c23a' },
+  { label: '待审核', value: 0, icon: Warning, color: '#e6a23c' },
+  { label: '今日签到', value: 0, icon: Clock, color: '#f56c6c' }
 ])
+
+const loading = ref(false)
+
+const fetchStatistics = async () => {
+  loading.value = true
+  try {
+    const result = await getStatistics()
+    console.log('Statistics data:', result)
+    stats.value = [
+      { label: '今日访客', value: result.data.todayApplyCount || 0, icon: User, color: '#409eff' },
+      { label: '已通过申请', value: result.data.pendingCount || 0, icon: Check, color: '#67c23a' },
+      { label: '待审核', value: result.data.pendingCount || 0, icon: Warning, color: '#e6a23c' },
+      { label: '今日签到', value: result.data.todayCheckInCount || 0, icon: Clock, color: '#f56c6c' }
+    ]
+  } catch (error) {
+    console.error('Fetch statistics failed:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchStatistics()
+})
 </script>
 
 <template>

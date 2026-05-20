@@ -1,6 +1,6 @@
 export interface VisitRecord {
   id: string
-  applyId: string
+  applyNo: string
   visitorName: string
   phone: string
   idCard: string

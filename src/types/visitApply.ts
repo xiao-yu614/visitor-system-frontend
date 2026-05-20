@@ -16,7 +16,7 @@ export interface VisitApplyResponse {
 
 export interface VisitApplyItem {
   id: string
-  applyId: string
+  applyNo: string
   visitorName: string
   phone: string
   idCard: string
@@ -58,12 +58,12 @@ export interface ApprovalParams {
   remark?: string
 }
 
-export type VisitStatus = 'pending' | 'approved' | 'rejected' | 'visited' | 'completed'
+export type VisitStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'VISITED' | 'COMPLETED'
 
 export const statusMap: Record<VisitStatus, { label: string; type: 'success' | 'warning' | 'danger' | 'info' }> = {
-  pending: { label: '待审批', type: 'warning' },
-  approved: { label: '已通过', type: 'success' },
-  rejected: { label: '已拒绝', type: 'danger' },
-  visited: { label: '已访问', type: 'info' },
-  completed: { label: '已完成', type: 'info' }
+  PENDING: { label: '待审批', type: 'warning' },
+  APPROVED: { label: '已通过', type: 'success' },
+  REJECTED: { label: '已拒绝', type: 'danger' },
+  VISITED: { label: '已访问', type: 'info' },
+  COMPLETED: { label: '已完成', type: 'info' }
 }

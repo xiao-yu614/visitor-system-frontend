@@ -1,104 +1,96 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { ElMessage } from 'element-plus'
-import { createVisitApply } from '@/api/visitApply'
-import type { VisitApplyForm } from '@/types/visitApply'
-import type { FormInstance, FormRules } from 'element-plus'
+import { ref, reactive } from "vue";
+import { ElMessage } from "element-plus";
+import { createVisitApply } from "@/api/visitApply";
+import type { VisitApplyForm } from "@/types/visitApply";
+import type { FormInstance, FormRules } from "element-plus";
 
-const formRef = ref<FormInstance>()
+const formRef = ref<FormInstance>();
 
 const form = reactive<VisitApplyForm>({
-  visitorName: '',
-  phone: '',
-  idCard: '',
-  company: '',
-  visitPerson: '',
-  reason: '',
-  startTime: '',
-  endTime: ''
-})
+  visitorName: "",
+  phone: "",
+  idCard: "",
+  company: "",
+  visitPerson: "",
+  reason: "",
+  startTime: "",
+  endTime: "",
+});
 
-const loading = ref(false)
-const showSuccessDialog = ref(false)
-const applyId = ref('')
+const loading = ref(false);
+const showSuccessDialog = ref(false);
+const applyId = ref("");
 
 const validateEndTime = (rule: any, value: string, callback: any) => {
   if (!value) {
-    callback(new Error('请输入结束时间'))
+    callback(new Error("请输入结束时间"));
   } else if (form.startTime && new Date(value) <= new Date(form.startTime)) {
-    callback(new Error('结束时间必须晚于开始时间'))
+    callback(new Error("结束时间必须晚于开始时间"));
   } else {
-    callback()
+    callback();
   }
-}
+};
 
 const rules: FormRules = {
-  visitorName: [
-    { required: true, message: '请输入访客姓名', trigger: 'blur' }
-  ],
+  visitorName: [{ required: true, message: "请输入访客姓名", trigger: "blur" }],
   phone: [
-    { required: true, message: '请输入手机号', trigger: 'blur' },
-    { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' }
+    { required: true, message: "请输入手机号", trigger: "blur" },
+    {
+      pattern: /^1[3-9]\d{9}$/,
+      message: "请输入正确的手机号",
+      trigger: "blur",
+    },
   ],
-  idCard: [
-    { required: true, message: '请输入身份证号', trigger: 'blur' }
-  ],
-  visitPerson: [
-    { required: true, message: '请输入访问对象', trigger: 'blur' }
-  ],
-  reason: [
-    { required: true, message: '请输入访问事由', trigger: 'blur' }
-  ],
-  startTime: [
-    { required: true, message: '请选择开始时间', trigger: 'change' }
-  ],
-  endTime: [
-    { required: true, validator: validateEndTime, trigger: 'change' }
-  ]
-}
+  idCard: [{ required: true, message: "请输入身份证号", trigger: "blur" }],
+  visitPerson: [{ required: true, message: "请输入访问对象", trigger: "blur" }],
+  reason: [{ required: true, message: "请输入访问事由", trigger: "blur" }],
+  startTime: [{ required: true, message: "请选择开始时间", trigger: "change" }],
+  endTime: [{ required: true, validator: validateEndTime, trigger: "change" }],
+};
 
 const handleSubmit = async () => {
-  if (!formRef.value) return
+  if (!formRef.value) return;
 
   await formRef.value.validate(async (valid) => {
     if (valid) {
-      loading.value = true
+      loading.value = true;
       try {
         const submitData = {
           ...form,
           startTime: formatDateTime(form.startTime),
-          endTime: formatDateTime(form.endTime)
-        }
-        const result = await createVisitApply(submitData)
-        applyId.value = result.applyId
-        showSuccessDialog.value = true
+          endTime: formatDateTime(form.endTime),
+        };
+        const result = await createVisitApply(submitData);
+        applyId.value = result.applyId;
+        showSuccessDialog.value = true;
       } catch (error) {
-        ElMessage.error('申请提交失败，请稍后重试')
-        console.error('Submit apply failed:', error)
+        ElMessage.error("申请提交失败，请稍后重试");
+        console.error("Submit apply failed:", error);
       } finally {
-        loading.value = false
+        loading.value = false;
       }
     }
-  })
-}
+  });
+};
 
 const formatDateTime = (dateTime: string): string => {
-  if (!dateTime) return ''
-  const date = new Date(dateTime)
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  const hours = String(date.getHours()).padStart(2, '0')
-  const minutes = String(date.getMinutes()).padStart(2, '0')
-  const seconds = String(date.getSeconds()).padStart(2, '0')
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
-}
+  if (!dateTime) return "";
+  const date = new Date(dateTime);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const seconds = String(date.getSeconds()).padStart(2, "0");
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+};
 
 const resetForm = () => {
-  formRef.value?.resetFields()
-  showSuccessDialog.value = false
-  applyId.value = ''
-}
+  formRef.value?.resetFields();
+  showSuccessDialog.value = false;
+  applyId.value = "";
+};
 </script>
 
 <template>
@@ -121,11 +113,19 @@ const resetForm = () => {
         </el-form-item>
 
         <el-form-item label="手机号" prop="phone">
-          <el-input v-model="form.phone" placeholder="请输入手机号" maxlength="11" />
+          <el-input
+            v-model="form.phone"
+            placeholder="请输入手机号"
+            maxlength="11"
+          />
         </el-form-item>
 
         <el-form-item label="身份证号" prop="idCard">
-          <el-input v-model="form.idCard" placeholder="请输入身份证号" />
+          <el-input
+            v-model="form.idCard"
+            placeholder="请输入身份证号"
+            maxlength="18"
+          />
         </el-form-item>
 
         <el-form-item label="所属单位" prop="company">
@@ -152,7 +152,7 @@ const resetForm = () => {
             placeholder="选择开始时间"
             style="width: 100%"
             format="YYYY-MM-DD HH:mm:ss"
-            value-format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DDTHH:mm:ss"
           />
         </el-form-item>
 
@@ -168,7 +168,12 @@ const resetForm = () => {
         </el-form-item>
 
         <el-form-item class="apply-form__submit">
-          <el-button type="primary" @click="handleSubmit" :loading="loading" style="width: 200px">
+          <el-button
+            type="primary"
+            @click="handleSubmit"
+            :loading="loading"
+            style="width: 200px"
+          >
             提交申请
           </el-button>
         </el-form-item>
@@ -190,9 +195,7 @@ const resetForm = () => {
         <p class="tip">请记住您的申请编号，用于查询申请状态</p>
       </div>
       <template #footer>
-        <el-button type="primary" @click="resetForm">
-          继续申请
-        </el-button>
+        <el-button type="primary" @click="resetForm"> 继续申请 </el-button>
       </template>
     </el-dialog>
   </div>
